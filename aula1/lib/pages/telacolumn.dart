@@ -1,3 +1,4 @@
+import 'package:aula1/style/geral.dart';
 import 'package:flutter/material.dart';
 
 class Telacolumn extends StatelessWidget {
@@ -6,8 +7,7 @@ class Telacolumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title:Text("Tela Column", style:TextStyle(color: Colors.white)
-      ),
+      appBar: AppBar(title:Text("Tela Column", style:titulo),
       backgroundColor: Colors.black,
       centerTitle: true,
       ),
@@ -15,10 +15,12 @@ class Telacolumn extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 25,
         children: [
-        Container(width: 20, height: 20, color:Colors.blue),
+        Container(width: tamanho, height: tamanho, color:Colors.blue),
         Container(width: 40, height: 40, color: Colors.pink),
         Container(width: 60, height: 60, color: Colors.purple),
-        TextButton(onPressed: (){
+        TextButton(
+          style: estiloBotao,
+          onPressed: (){
           Navigator.pushNamed(context, "/row");
         }, child: Text("Clique aqui -> Row"))
       ],))
