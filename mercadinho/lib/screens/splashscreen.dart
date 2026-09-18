@@ -14,7 +14,7 @@ class _SplashScreenState extends State<SplashScreen> {
   super.initState();
   Future.delayed( // função futura que espera um determinado tempo depois realiza uma ação
     Duration(seconds: 5),
-    (){Navigator.pushNamed(context,"/home");}
+    (){Navigator.pushNamed(context,"/navbar");}
   );
   }
   @override
