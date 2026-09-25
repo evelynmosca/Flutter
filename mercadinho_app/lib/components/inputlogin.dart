@@ -1,29 +1,27 @@
 import 'package:flutter/material.dart';
 
 class InputLogin extends StatelessWidget {
-  TextEditingController fofoqueira; 
-  String placeholder;
-  TextInputType? tipo;
-  bool? senha;
-  InputLogin({super.key, required this.fofoqueira, required this.placeholder, this.tipo =TextInputType.text, this.senha = false});
+  final TextEditingController fofoqueira;
+  final String placeholder;
+  final TextInputType tipo;
+  final bool senha;
+  final IconData? icone;
+  const InputLogin({super.key, required this.fofoqueira, required this.placeholder, this.tipo = TextInputType.text, this.senha = false, this.icone});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsGeometry.symmetric(horizontal: 40,vertical: 10),
-      child: TextField(
+    return TextField(
         controller: fofoqueira,
-        keyboardType: tipo,  //TextInputType.number
-        obscureText: senha!,
+        keyboardType: tipo,
+        obscureText: senha,
         decoration: InputDecoration(
-          filled: true, //esta preenchido?
-          fillColor: Colors.white, //cor de preenchimento 
-          hintText: placeholder,
-          border: OutlineInputBorder(
-           borderSide: BorderSide.none, //Tire a espessura da borda 
-          )
+          labelText: placeholder,
+          prefixIcon: icone == null ? null : Icon(icone),
+          filled: true,
+          fillColor: const Color(0xfff7f7fc),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xff4b27b8), width: 2)),
         ),
-      ),
     );
   }
 }

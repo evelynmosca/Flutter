@@ -41,13 +41,15 @@ class _TelaHomeState extends State<TelaHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: MinhaAppBar(),
-      body:produtos.isEmpty? Center(child:Text("Carregando produtos.....")):
-      GridView(gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-      children: [
-      for(final produto in produtos)
-      ProdutosCard(nome: produto["nome"], preco: produto["preco"], urlImagem: produto["imagem"])
-      ],
-      )
-    );
-  }
+      body: produtos.isEmpty ? const Center(child: CircularProgressIndicator()) :
+      GridView.builder(
+        padding: const EdgeInsets.all(12),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: .72),
+        itemCount: produtos.length,
+        itemBuilder: (context, index) {
+          final produto = produtos[index];
+          return ProdutosCard(nome: produto["nome"], preco: double.tryParse('${produto["preco"]}') ?? 0, urlImagem: produto["imagem"]);
+        },
+    ),
+  );}
 }

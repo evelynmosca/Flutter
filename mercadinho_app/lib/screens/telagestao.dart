@@ -4,99 +4,78 @@ import 'package:http/http.dart' as http;
 
 class TelaGestao extends StatefulWidget {
   const TelaGestao({super.key});
-
   @override
   State<TelaGestao> createState() => _TelaGestaoState();
 }
 
 class _TelaGestaoState extends State<TelaGestao> {
-  TextEditingController nomeDigitado = TextEditingController();
-  TextEditingController urlDigitado = TextEditingController();
-  TextEditingController precoDigitado = TextEditingController();
+  final nomeDigitado = TextEditingController();
+  final urlDigitado = TextEditingController();
+  final precoDigitado = TextEditingController();
   List listaProdutos = [];
 
-  @override 
-  void initState() {
-    super.initState();
-    fazerGet();
-  }
+  @override
+  void initState() { super.initState(); fazerGet(); }
 
-  void fazerPost() async {
-    final respostaServidor = await http.post(Uri.parse("https://mercadinho-api-ouaq.onrender.com/produtos"),
-    headers: {"Content-Type":"application/json"},
-    body: jsonEncode({
-      "nome": nomeDigitado.text,
-      "imagem":urlDigitado.text, 
-      "preco":double.parse(precoDigitado.text)
-    })
-    );
-
-    if(mounted){
-    if(respostaServidor.statusCode == 201){
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Produto Criado com Sucesso!"))
-      );
-      Navigator.pushNamed(context, "/navbar");
-    }else{
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erro ao criar Produto. Tente Novamente.",style:TextStyle(color: Colors.white)), backgroundColor: Colors.red,)
-      );
+  Future<void> fazerPost() async {
+    final preco = double.tryParse(precoDigitado.text.replaceAll(',', '.'));
+    if (nomeDigitado.text.trim().isEmpty || urlDigitado.text.trim().isEmpty || preco == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Preencha todos os campos corretamente")));
+      return;
     }
+    final resposta = await http.post(Uri.parse("https://mercadinho-api-ouaq.onrender.com/produtos"), headers: {"Content-Type":"application/json"}, body: jsonEncode({"nome": nomeDigitado.text.trim(), "imagem": urlDigitado.text.trim(), "preco": preco}));
+    if (!mounted) return;
+    if (resposta.statusCode == 201) {
+      nomeDigitado.clear(); urlDigitado.clear(); precoDigitado.clear();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Produto criado com sucesso!")));
+      fazerGet();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Erro ao criar produto."), backgroundColor: Colors.red));
     }
   }
 
-  void fazerGet() async {
-    final respostaServidor = await http.get(Uri.parse("https://mercadinho-api-ouaq.onrender.com/produtos"));
-    if(respostaServidor.statusCode == 200){
-      final dados = jsonDecode(respostaServidor.body);
-      setState(() {
-        listaProdutos = dados;
-      });
-    }else {
-      if(mounted){ //Mounted verifica se a logica/tela foi totalmente montada antes de aparecer uma mensagem de erro
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erro ao carregar dados!"))
-        );
-      }
+  Future<void> fazerGet() async {
+    final resposta = await http.get(Uri.parse("https://mercadinho-api-ouaq.onrender.com/produtos"));
+    if (resposta.statusCode == 200 && mounted) setState(() => listaProdutos = jsonDecode(resposta.body));
+  }
+
+  Future<void> fazerDelete(dynamic id) async {
+    final resposta = await http.delete(Uri.parse("https://mercadinho-api-ouaq.onrender.com/produtos/$id"));
+    if (!mounted) return;
+    if (resposta.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Produto removido.")));
+      fazerGet();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Falha ao remover produto.")));
     }
   }
 
-  void fazerDelete(dynamic id) async {
-    final respostaServidor = await http.delete(Uri.parse("https://mercadinho-api-ouaq.onrender.com/produtos/$id"));
-    if(respostaServidor.statusCode == 200){
-      if(mounted){
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Dado deletado com sucesso")));
-        fazerGet();
-        Navigator.pushNamed(context, "/navbar");
-        }
-    }else{
-      if(mounted){
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Falha ao deletar dado!")));
-      }
-    }
-
-  }
+  Widget campo(TextEditingController controller, String label, IconData icon, {TextInputType tipo = TextInputType.text}) => TextField(controller: controller, keyboardType: tipo, decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon), filled: true, fillColor: const Color(0xfff7f7fc), border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xff4b27b8), width: 2))));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title:Text("Tela Gestão")),
-      body:ListView(
-        children: [
-          TextField(controller: nomeDigitado,decoration: InputDecoration(hintText: "Insira o nome do produto"),),
-          TextField(controller: urlDigitado,decoration: InputDecoration(hintText: "Insira a url do produto"),),
-          TextField(controller: precoDigitado,decoration: InputDecoration(hintText: "Insira o preço do produto"),),
-          TextButton(onPressed: fazerPost, child: Text("Salvar")),
-          SizedBox(height: 100),
-          Divider(indent: 15,endIndent: 15),
-          for(final produto in listaProdutos)
-          ListTile(
-            title:Text(produto["nome"]),
-            subtitle: Text(produto["preco"].toStringAsFixed(2)),
-            trailing: IconButton(onPressed: ()=> fazerDelete(produto["id"]), icon: Icon(Icons.delete)),
-          )
-        ],
-      )
+      appBar: AppBar(title: const Text("Gestão de produtos")),
+      body: ListView(padding: const EdgeInsets.all(20), children: [
+        const Text("Adicionar produto", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        Text("Cadastre um novo item no seu catálogo", style: TextStyle(color: Colors.blueGrey.shade600)),
+        const SizedBox(height: 18),
+        Card(child: Padding(padding: const EdgeInsets.all(18), child: Column(children: [
+          campo(nomeDigitado, "Nome do produto", Icons.shopping_bag_outlined),
+          const SizedBox(height: 14),
+          campo(urlDigitado, "URL da imagem", Icons.image_outlined, tipo: TextInputType.url),
+          const SizedBox(height: 14),
+          campo(precoDigitado, "Preço", Icons.sell_outlined, tipo: const TextInputType.numberWithOptions(decimal: true)),
+          const SizedBox(height: 20),
+          SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: fazerPost, icon: const Icon(Icons.add), label: const Text("Adicionar produto"), style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 15)))),
+        ]))),
+        const SizedBox(height: 28),
+        const Text("Produtos cadastrados", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 10),
+        if (listaProdutos.isEmpty) const Card(child: Padding(padding: EdgeInsets.all(20), child: Text("Nenhum produto cadastrado."))),
+        for (final produto in listaProdutos) Card(child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), leading: const CircleAvatar(backgroundColor: Color(0xffeeeaff), child: Icon(Icons.inventory_2_outlined, color: Color(0xff4b27b8))), title: Text(produto["nome"], style: const TextStyle(fontWeight: FontWeight.bold)), subtitle: Text("R\$ ${double.tryParse('${produto["preco"]}')?.toStringAsFixed(2) ?? '0.00'}"), trailing: IconButton(onPressed: () => fazerDelete(produto["id"]), icon: const Icon(Icons.delete_outline, color: Colors.redAccent))))
+      ]),
     );
   }
 }

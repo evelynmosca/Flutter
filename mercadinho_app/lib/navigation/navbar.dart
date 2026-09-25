@@ -37,8 +37,9 @@ class _NavBarState extends State<NavBar> {
       ],
       currentIndex: indexAtual,
       onTap:mudarIndex,
-      backgroundColor: Colors.orange,
-      selectedItemColor: Colors.white,
+      backgroundColor: Colors.white,
+      selectedItemColor: const Color(0xff4b27b8),
+      unselectedItemColor: Colors.blueGrey,
       ),
     );
   }

@@ -16,6 +16,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff4b27b8), primary: const Color(0xff4b27b8), secondary: const Color(0xff1976d2)),
+        scaffoldBackgroundColor: const Color(0xfff7f7fc),
+        appBarTheme: const AppBarTheme(foregroundColor: Colors.white, backgroundColor: Color(0xff4b27b8), elevation: 0),
+        cardTheme: CardThemeData(color: Colors.white, surfaceTintColor: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16)))),
+        useMaterial3: true,
+      ),
       initialRoute: "/",
       routes:{
         "/":(context) => SplashScreen(),

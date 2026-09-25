@@ -9,11 +9,11 @@ class MinhaAppBar extends StatelessWidget implements PreferredSizeWidget{
       title:Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-        Text("Tela Home"),
+        const Text("Mercadinho", style: TextStyle(fontWeight: FontWeight.bold)),
         IconButton(onPressed: ()=> Navigator.pushNamed(context, "/gestao"), icon: Icon(Icons.settings))
       ],),
       automaticallyImplyLeading: false,
-      backgroundColor: Colors.orange,
+      backgroundColor: const Color(0xff4b27b8),
     );
   }
 
