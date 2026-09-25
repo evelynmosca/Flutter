@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mercadinho/navigation/navbar.dart';
 import 'package:mercadinho/screens/splashscreen.dart';
+import 'package:mercadinho/screens/telagestao.dart';
 import 'package:mercadinho/screens/telahome.dart';
 import 'package:mercadinho/screens/telaperfil.dart';
 
@@ -15,10 +17,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       initialRoute: "/",
       routes: {
-
         "/":(context) => SplashScreen(),
         "/home":(context) => TelaHome(),
-        "/perfil":(context) => TelaPerfil()
+        "/perfil":(context) => TelaPerfil(),
+        "/navbar":(context) => NavBar(),
+        "/gestao":(context) => TelaGestao(),
       },
     );
   }

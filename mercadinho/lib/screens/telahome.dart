@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mercadinho/components/minha_appbar.dart';
 import 'package:mercadinho/components/produtos.dart';
 
 class TelaHome extends StatefulWidget {
@@ -38,7 +39,7 @@ class _TelaHomeState extends State<TelaHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Tela Home"),backgroundColor: Colors.orange, centerTitle: true),
+      appBar: MinhaAppBar(),
       body: produtos.isEmpty? Center(child: Text("Carregando produtos...")):
       GridView(gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
       children: [
