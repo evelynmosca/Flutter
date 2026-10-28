@@ -1,0 +1,6 @@
+# O banco é criado pelo servidor e contém dados cadastrados durante os testes.
+mercadinho.db
+mercadinho.db-shm
+mercadinho.db-wal
+__pycache__/
+
