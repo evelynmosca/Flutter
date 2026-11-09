@@ -95,7 +95,7 @@ O app escolhe automaticamente a **URL base** para cada ambiente. Na tela Configu
 | Chrome ou Windows no mesmo computador | http://127.0.0.1:8765 |
 | Celular físico | http://IP_DO_COMPUTADOR_NA_REDE:8765 |
 
-O problema de tempo limite no Chrome ocorria porque `10.0.2.2` é um endereço exclusivo do emulador. A versão atual usa `127.0.0.1` no Chrome/Windows e corrige automaticamente esse endereço antigo se estiver salvo no navegador. A API foi testada no Chrome e no emulador com os mesmos três produtos.
+O problema de tempo limite no Chrome ocorria porque `10.0.2.2` é um endereço exclusivo do emulador. A versão atual usa `127.0.0.1` no Chrome/Windows e `10.0.2.2` no emulador, corrigindo automaticamente uma dessas URLs locais quando estiver salva no ambiente errado. A API foi testada no Chrome e no Pixel 9 com o mesmo catálogo.
 
 Por padrão, o backend escuta somente em `127.0.0.1`, suficiente para este computador e para o emulador Android. Para **celular físico**, encerre a API local que estiver usando a porta 8765, conecte telefone e computador à mesma rede, inicie o servidor com o comando abaixo, use o IP do computador na tela Configurações e permita a porta 8765 no firewall, se necessário:
 
@@ -156,20 +156,20 @@ Essas são comparações de uso, sem afirmar que os recursos são exclusivos de 
 ## Gerar e instalar o APK
 
 ~~~powershell
-flutter build apk --debug
+flutter build apk --release
 flutter devices
-flutter install --debug -d emulator-5554
+flutter install --release -d emulator-5554
 ~~~
 
 Alternativa com adb, cujo executável não está no Path deste Windows:
 
 ~~~powershell
 $adbMercadinho = Join-Path $env:LOCALAPPDATA 'Android\sdk\platform-tools\adb.exe'
-& $adbMercadinho install -r 'build/app/outputs/flutter-apk/app-debug.apk'
+& $adbMercadinho install -r 'MercadinhoGenciana.apk'
 & $adbMercadinho shell am start -n 'com.avaliacao.avaliacao_app/.MainActivity'
 ~~~
 
-O APK fica em `build/app/outputs/flutter-apk/app-debug.apk`, com uma [cópia pronta para entrega](entrega/MercadinhoGenciana-debug.apk) fora da pasta de build. As duas cópias têm o mesmo SHA-256: `CE005AD1E825665E6FA8CED6B8E52CCA1A0E64BED845295E4760A93BD342634B`. O build e a instalação passaram no emulador em 28/10/2026. A API Python precisa estar ativa durante o uso do APK.
+O APK atual fica na [raiz do projeto](MercadinhoGenciana.apk), com outra [cópia para entrega](entrega/MercadinhoGenciana.apk). Ambas correspondem a `build/app/outputs/flutter-apk/app-release.apk` e têm SHA-256 `C6F6EEC61E6F90E09B30A3C61BC9A155B8A68FBE84D5D9CCF30B77A862E57816`. O build de release e a instalação no Pixel 9 passaram em 09/11/2026. A API Python precisa estar ativa durante o uso do APK. Este projeto assina a variante release com a chave de depuração do Flutter, suficiente para instalação manual e avaliação; publicação em loja exige uma chave de produção.
 
 ## Decisões, alternativas e problemas
 
@@ -182,7 +182,7 @@ O APK fica em `build/app/outputs/flutter-apk/app-debug.apk`, com uma [cópia pro
 | Interface | Telas por tarefa, com widgets compartilhados onde reduzem repetição. |
 | Integração adicional | ViaCEP escolhido para fornecer endereço sem interferir no CRUD. |
 
-Problemas e soluções registrados: o emulador acessa o computador por `10.0.2.2`, enquanto Chrome/Windows precisam de `127.0.0.1`; o endereço único anterior gerava tempo limite no Chrome. `LocalService` agora escolhe a URL por plataforma e migra o endereço antigo salvo no navegador. Uma API demonstrativa não comprovaria persistência, então o backend usa SQLite. Para evitar esquecer o servidor desligado, o VS Code executa `iniciar_api.ps1` antes de abrir o app.
+Problemas e soluções registrados: o emulador acessa o computador por `10.0.2.2`, enquanto Chrome/Windows precisam de `127.0.0.1`; o endereço único anterior gerava tempo limite no Chrome. `LocalService` escolhe a URL por plataforma e corrige uma URL local salva no ambiente errado. Uma API demonstrativa não comprovaria persistência, então o backend usa SQLite. A falha no Pixel 9 ocorreu com a API desligada; `executar_app.ps1` inicia o servidor antes do Flutter, e a tarefa do VS Code pode iniciá-lo ao abrir a pasta.
 
 ## Validação realizada em 28/10/2026
 
@@ -207,12 +207,15 @@ flutter install --debug -d emulator-5554
 | Chrome | `flutter build web` passou; a [captura Web](evidencias/chrome_catalogo.png) mostra os três produtos e promoções carregados da API, sem tempo limite. |
 | Android | `flutter build apk --debug` e `flutter install --debug -d emulator-5554` passaram; a [captura Android](evidencias/android_catalogo.png) e o [XML](evidencias/android_catalogo.xml) mostram os três produtos. |
 | Nome do aplicativo | O APK atualizado abriu no emulador com [Mercadinho Genciana na tela inicial](evidencias/genciana_android.png), confirmado também no [XML](evidencias/genciana_android.xml); o build Web contém o mesmo título. |
+| Correção de conexão e APK release (09/11/2026) | O [Pixel 9](evidencias/pixel9_release.png) e o [Chrome](evidencias/chrome_catalogo_atual.png) carregaram o catálogo real com quatro produtos. `flutter analyze`, `flutter test` (7/7), `python backend/test_servidor.py` (3/3), `flutter build web` e `flutter build apk --release` passaram; `adb install -r MercadinhoGenciana.apk` retornou `Success`. |
 | POST pela interface | Produto de teste criado no emulador por formulário, confirmado por GET no backend e no [XML da tela](evidencias/produto_criado.xml) com preço R$ 12,50. |
 | PUT pela interface | Preço do mesmo produto alterado para R$ 14,00, confirmado por GET `/produtos/11` e no [XML da tela](evidencias/produto_editado.xml). |
 | DELETE pela interface | Gerenciamento pediu confirmação e excluiu o produto; GET `/produtos/11` retornou 404, restaram três produtos e o [XML da tela](evidencias/produto_excluido.xml) registrou o sucesso. |
 | Persistência local e remota | Após encerrar e reabrir o processo Android, a [captura](evidencias/reinicio_android.png) e o [XML](evidencias/reinicio_android.xml) mostram o contato fictício e os três produtos; o [XML das Configurações](evidencias/contato_apos_reinicio.xml) confirma nome e telefone recuperados do armazenamento seguro. |
 | ViaCEP real | O [resultado no emulador](evidencias/cep_resultado.png) e o [XML](evidencias/cep_resultado.xml) mostram o endereço obtido para 01001-000. |
 | Layout | O formulário passou em 320 × 640 e 800 × 1000 no teste de widget; houve inspeção visual no Chrome e no emulador. As demais telas não foram revisadas visualmente em tablet. |
+
+Os números de telefone nas evidências XML foram ocultados antes da publicação no GitHub. As verificações originais foram realizadas no emulador.
 
 A pasta `integration_test` e sua dependência foram removidas porque não são necessárias para executar o aplicativo. O fluxo real de CRUD foi conferido manualmente no emulador e os testes automáticos restantes ficam em `test/` e `backend/test_servidor.py`. Ao terminar a conferência, o produto temporário foi excluído e os dados locais fictícios foram limpos do emulador; os produtos demonstrativos permanecem no banco.
 
